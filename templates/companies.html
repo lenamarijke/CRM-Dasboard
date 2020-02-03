@@ -1,0 +1,129 @@
+{% extends 'layout.html' %}
+
+{% block body %}
+
+{% block javascript %}
+<div class="container">
+	<div class="row mt-4">
+		<div class="col-md-4">
+			<div class="card shadow" style="height: min-content;">
+				<div class="card-header text-white" style="background-color: #66bb6a;">
+					<div class="d-flex">
+						<h5 class="w-100"><strong id="customerLabel">
+								<div class="spinner-border" role="status">
+									<span class="sr-only">Loading...</span>
+								</div>
+							</strong></h5>
+						<h5><i class="fas fa-user" style="font-size: 1.5rem;"></i></h5>
+					</div>
+				</div>
+				<div class="card-body">
+					<p>Active customers</p>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-4">
+			<div class="card shadow" style="height: min-content;">
+				<div class="card-header text-white" style="background-color: #ffcf3d;">
+					<div class="d-flex">
+						<h5 class="w-100"><strong id="prospectLabel">
+								<div class="spinner-border" role="status">
+									<span class="sr-only">Loading...</span>
+								</div>
+							</strong></h5>
+						<h5><i class="fas fa-bullseye" style="font-size: 1.5rem;"></i></h5>
+					</div>
+				</div>
+				<div class="card-body">
+					<p>Prospects</p>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-4">
+			<div class="card shadow" style="height: min-content;">
+				<div class="card-header text-white" style="background-color: #ff7043;">
+					<div class="d-flex">
+						<h5 class="w-100"><strong id="inactiveLabel">
+								<div class="spinner-border" role="status">
+									<span class="sr-only">Loading...</span>
+								</div>
+							</strong></h5>
+						<h5 class="w-100 text-right"><strong>Zz</strong></h5>
+					</div>
+				</div>
+				<div class="card-body">
+					<p>Inactive companies</p>
+				</div>
+			</div>
+		</div>
+	</div class="row">
+	<div class="row mt-4">
+		<div class="col-md-12">
+			<div class="card shadow">
+				<div class="card-body">
+					<table class="table table-hover">
+						<thead>
+							<input class="form-control" id="myInput" type="text" placeholder="Search..">
+							<tr>
+								<th scope="col">Company</th>
+								<th scope="col">Status</th>
+							</tr>
+						</thead>
+						<tbody id="tableCompanies">
+						</tbody>
+					</table>
+					<div id="tableSpinner" class="d-flex justify-content-center mt-4">
+						<div class="spinner-border" role="status">
+							<span class="sr-only">Loading...</span>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script>
+	$(document).ready(function(){
+		function reload(){
+			console.log('Loading Data')
+			$.get('http://127.0.0.1:5000/api/companies', function( data ) {
+				$('#customerLabel').text(data.customers)
+				$('#prospectLabel').text(data.prospects)
+				$('#inactiveLabel').text(data.inactives)
+
+				// Make table
+				$("#tableCompanies tr").remove(); 
+				var table = document.getElementById("tableCompanies");
+				data.companies_by_status.forEach(function(company){
+					var row = table.insertRow(table.rows.length);
+					var cell1 = row.insertCell(0);
+					var cell2 = row.insertCell(1);
+					cell1.innerHTML = data.company_map[company[0]].name;
+					cell2.innerHTML = company[1];
+				})
+
+				// Remove table spinner
+				var element = document.getElementById('tableSpinner');
+				element.parentNode.removeChild(element);
+			});	
+		} 
+		// Reload every 10 seconds
+		reload()
+		setInterval(function(){
+			reload()
+		}, 10000)
+	});
+	$(document).ready(function(){
+	  $("#myInput").on("keyup", function() {
+		var value = $(this).val().toLowerCase();
+		$("#tableCompanies tr").filter(function() {
+		  $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+		});
+	  });
+	});
+</script>
+
+<!-- The contents of myscript.js will be loaded inside the script tag -->
+{% endblock %}
+{% endblock %}
